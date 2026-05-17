@@ -1,0 +1,24 @@
+{
+    "room_size": [
+        5.0,
+        4.5
+    ],
+    "rectangles": [
+        {
+            "index": 0,
+            "name": "postel",
+            "size": [
+                1.8,
+                2.1
+            ]
+        },
+        {
+            "index": 1,
+            "name": "skříň",
+            "size": [
+                0.8,
+                0.6
+            ]
+        }
+    ]
+}
