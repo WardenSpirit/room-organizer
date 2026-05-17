@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 
-def visualize(room_size, names, items):
-
+def visualize(problem, result):
     _, ax = plt.subplots(figsize=(10, 6))
 
+    room_size = problem["room_size"]
     ax.add_patch(
         patches.Rectangle(
             (0, 0), room_size[0], room_size[1],
@@ -13,8 +13,9 @@ def visualize(room_size, names, items):
         )
     )
 
+    items = problem["items"]
     for i in range(len(items)):
-        item = items[i]
+        item = result[i]
         x, y = item["x"], item["y"]
         w, h = item["w"], item["h"]
 
@@ -27,7 +28,7 @@ def visualize(room_size, names, items):
 
         ax.text(
             x + w/2, y + h/2,
-            f"{names[i]}",
+            f"{items[i]["name"]}",
             ha="center", va="center"
         )
 
