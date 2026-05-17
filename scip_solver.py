@@ -111,4 +111,8 @@ def solve(room_size, names, sizes):
     model.setObjective(0.0)
     model.optimize()
 
+    status = model.getStatus()
+    if status not in ("optimal", "feasible"):
+        raise RuntimeError(f"SCIP nenašel validní řešení (status: {status})")
+
     return _get_result(model, item_vars)
