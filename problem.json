@@ -5,29 +5,102 @@
     ],
     "items": [
         {
-            "index": 0,
             "name": "postel",
             "size": [
                 1.8,
-                2.1
+                2.05
             ],
-            "x": 1.0
+            "color": "red",
+            "against_wall": {
+                "with_side": "vertical",
+                "allowed_walls": [
+                    "left",
+                    "bottom",
+                    "right"
+                ]
+            }
         },
         {
-            "index": 1,
             "name": "skříň",
             "size": [
-                0.8,
-                0.6
-            ]
+                0.6,
+                0.8
+            ],
+            "against_wall": {
+                "with_side": "horizontal",
+                "allowed_walls": [
+                    "left",
+                    "bottom",
+                    "right",
+                    "top"
+                ]
+            }
         },
         {
-            "index": 1,
             "name": "koberec",
             "size": [
                 3.2,
                 2.4
-            ]
+            ],
+            "color": "brown"
+        },
+        {
+            "name": "velký noční stolek",
+            "size": [
+                0.5,
+                0.3
+            ],
+            "color": "black",
+            "beside": {
+                "name": "postel",
+                "self_side": "horizontal",
+                "that_side": "horizontal"
+            },
+            "against_wall": {
+                "with_side": "vertical",
+                "allowed_walls": [
+                    "left",
+                    "bottom",
+                    "right",
+                    "top"
+                ]
+            }
+        },
+        {
+            "name": "malý noční stolek",
+            "size": [
+                0.3,
+                0.3
+            ],
+            "color": "black",
+            "beside": {
+                "name": "postel",
+                "self_side": "horizontal",
+                "that_side": "horizontal"
+            },
+            "against_wall": {
+                "with_side": "vertical",
+                "allowed_walls": [
+                    "left",
+                    "bottom",
+                    "right",
+                    "top"
+                ]
+            }
+        },
+        {
+            "name": "dveřní prostor",
+            "size": [
+                0.8,
+                0.8
+            ],
+            "color": "grey",
+            "against_wall": {
+                "with_side": "vertical",
+                "allowed_walls":[
+                    "right"
+                ]
+            }
         }
     ]
 }
