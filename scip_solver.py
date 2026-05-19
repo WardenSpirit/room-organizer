@@ -136,25 +136,26 @@ def _constrain_items_against_wall(model: Model, room_size, items, item_vars):
             model.addCons(sum(against_horizontal_walls) >= 1 - M * (1 - rotations[i]), name = "one_horizontal_wall_effective_when_rotated")
             model.addCons(sum(against_vertical_walls) >= 1 - M * (rotations[i]), name = "one_vertical_wall_effective_when_not_rotated")
 
-def _constrain_items_neighbourliness(model, items, item_vars):
+def _constrain_item_mutual_besideness(model, items, item_vars):
     coords, sizes, rotations, relations = item_vars
-    items_n = len({i for (i, _) in coords})
+    items_n = len(rotations)
 
     for i in range(items_n):
         item = items[i]
         if "beside" not in item:
             continue
 
-        j = next((i for i, iterated_item in enumerate(items) if iterated_item["name"] == item["beside"]["name"]), None)
+        besideness = item["beside"]
+        j = next((i for i, iterated_item in enumerate(items) if iterated_item["name"] == besideness["name"]), None)
 
         # relations jsou jen pro i < j, takže musíme normalizovat pořadí
         if i < j:
-            i_side = item["beside"]["self_side"]
-            j_side = item["beside"]["that_side"]
+            i_side = besideness["self_side"]
+            j_side = besideness["that_side"]
         else:
             i, j = j, i
-            i_side = item["beside"]["that_side"]
-            j_side = item["beside"]["self_side"]
+            i_side = besideness["that_side"]
+            j_side = besideness["self_side"]
 
         relation = relations[i][j]
         left = relation["left"]
@@ -172,13 +173,66 @@ def _constrain_items_neighbourliness(model, items, item_vars):
         else:
             i_flipped_axis = 1 - rotations[i]
 
-        model.addCons(below + above <= 0 + M * (i_flipped_axis), name = "i_intersects_on_y_axis_with_j")
-        model.addCons(left + right <= 0 + M * (1 - i_flipped_axis), name = "i_intersects_on_x_axis_with_j")
+        model.addCons(below + above <= 0 + M * (i_flipped_axis), name = "{i}_intersects_on_y_axis_with_{j}")
+        model.addCons(left + right <= 0 + M * (1 - i_flipped_axis), name = "{i}_intersects_on_x_axis_with_{j}")
 
-        model.addCons(coords[i,0] + sizes[i,0] >= coords[j,0] - M * (i_flipped_axis), name = "i_not_far_on_left_from_j")
-        model.addCons(coords[i,0] <= coords[j,0] + sizes[j,0] + M * (i_flipped_axis), name = "i_not_far_on_right_from_j")
-        model.addCons(coords[i,1] + sizes[i,1] >= coords[j,1] - M * (1 - i_flipped_axis), name = "i_not_far_below_j")
-        model.addCons(coords[i,1] <= coords[j,1] + sizes[j,1] + M * (1 - i_flipped_axis), name = "i_not_far_above_j")
+        model.addCons(coords[i,0] + sizes[i,0] >= coords[j,0] - M * (i_flipped_axis), name = "{i}_not_far_on_left_from_{j}")
+        model.addCons(coords[i,0] <= coords[j,0] + sizes[j,0] + M * (i_flipped_axis), name = "{i}_not_far_on_right_from_{j}")
+        model.addCons(coords[i,1] + sizes[i,1] >= coords[j,1] - M * (1 - i_flipped_axis), name = "{i}_not_far_below_{j}")
+        model.addCons(coords[i,1] <= coords[j,1] + sizes[j,1] + M * (1 - i_flipped_axis), name = "{i}_not_far_above_{j}")
+
+def _extract_distance_bonuses(model: Model, items, item_vars):
+    coords, sizes, rotations, relations = item_vars
+    items_n = len(rotations)
+
+    expression = 0.0
+    for i in range(items_n):
+        item = items[i]
+        if "distance_bonus" not in item:
+            continue
+
+        distance_bonus = item["distance_bonus"]
+        j = next((i for i, iterated_item in enumerate(items) if iterated_item["name"] == distance_bonus["name"]), None)
+
+        if i > j:
+            i, j = j, i
+        relation = relations[i][j]
+
+        dx = model.addVar(lb = 0.0, ub = None, name = f"dx_between_{i}_{j}")
+        dy = model.addVar(lb = 0.0, ub = None, name = f"dy_between_{i}_{j}")
+
+        model.addCons(dx >= coords[j,0] - coords[i,0] - sizes[i,0])
+        model.addCons(dx >= coords[i,0] - coords[j,0] - sizes[j,0])
+        model.addCons(dx <= coords[j,0] - coords[i,0] - sizes[i,0] + M * (1 - relation["left"]))
+        model.addCons(dx <= coords[i,0] - coords[j,0] - sizes[j,0] + M * (1 - relation["right"]))
+        model.addCons(dx <= 0 + M * (relation["left"] + relation["right"]))
+        model.addCons(dx >= 0 - M * (relation["left"] + relation["right"]))
+
+        model.addCons(dy >= coords[j,1] - coords[i,1] - sizes[i,1])
+        model.addCons(dy >= coords[i,1] - coords[j,1] - sizes[j,1])
+        model.addCons(dy <= coords[j,1] - coords[i,1] - sizes[i,1] + M * (1 - relation["below"]))
+        model.addCons(dy <= coords[i,1] - coords[j,1] - sizes[j,1] + M * (1 - relation["above"]))
+        model.addCons(dy <= 0 + M * (relation["below"] + relation["above"]))
+        model.addCons(dy >= 0 - M * (relation["below"] + relation["above"]))
+
+        min_dd  = model.addVar(lb = 0.0, ub = None, name = f"min(dx,dy)_between_{i}_{j}")
+        dx_gt_dy = model.addVar(vtype = "B", name = f"between_{i}_{j}_dx_is_higher_than_dy")
+
+        model.addCons(min_dd <= dx)
+        model.addCons(min_dd <= dy)
+        model.addCons(min_dd >= dx - M * dx_gt_dy)
+        model.addCons(min_dd >= dy - M * (1 - dx_gt_dy))
+
+        dd  = model.addVar(lb = 0.0, ub = None, name = f"abs(dx-dy)_between_{i}_{j}")
+        model.addCons(dd == dx + dy - 2 * min_dd)
+
+        distance = (2**0.5) * min_dd + dd
+
+        weight = distance_bonus["weight"] if "weight" in distance_bonus else 1
+        expression += weight * distance
+
+    return expression
+
 
 def _get_result(model: Model, item_vars):
 
@@ -211,9 +265,12 @@ def solve(problem):
     _constrain_items_in_room(model, room_size, item_vars)
     item_vars = _constrain_items_not_overlapping(model, item_vars)
     _constrain_items_against_wall(model, room_size, items, item_vars)
-    _constrain_items_neighbourliness(model, items, item_vars)
+    _constrain_item_mutual_besideness(model, items, item_vars)
 
-    model.setObjective(0.0)
+    expr = 0.0
+    expr -= _extract_distance_bonuses(model, items, item_vars)
+    model.setObjective(expr)
+
     model.optimize()
 
     status = model.getStatus()

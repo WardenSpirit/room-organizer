@@ -16,7 +16,7 @@
                 "allowed_walls": [
                     "left",
                     "bottom",
-                    "right"
+                    "top"
                 ]
             }
         },
@@ -27,13 +27,7 @@
                 0.8
             ],
             "against_wall": {
-                "with_side": "horizontal",
-                "allowed_walls": [
-                    "left",
-                    "bottom",
-                    "right",
-                    "top"
-                ]
+                "with_side": "horizontal"
             }
         },
         {
@@ -57,13 +51,7 @@
                 "that_side": "horizontal"
             },
             "against_wall": {
-                "with_side": "vertical",
-                "allowed_walls": [
-                    "left",
-                    "bottom",
-                    "right",
-                    "top"
-                ]
+                "with_side": "vertical"
             }
         },
         {
@@ -79,13 +67,7 @@
                 "that_side": "horizontal"
             },
             "against_wall": {
-                "with_side": "vertical",
-                "allowed_walls": [
-                    "left",
-                    "bottom",
-                    "right",
-                    "top"
-                ]
+                "with_side": "vertical"
             }
         },
         {
@@ -100,6 +82,33 @@
                 "allowed_walls":[
                     "right"
                 ]
+            }
+        },
+        {
+            "name": "pracovní stůl",
+            "size": [
+                1.3,
+                0.9
+            ],
+            "color": "blue",
+            "distance_bonus": {
+                "name": "dveřní prostor",
+                "weight": 0.5
+            }
+        },
+        {
+            "name": "židle",
+            "size": [
+                0.6,
+                0.6
+            ],
+            "color": "cyan",
+            "beside": {
+                "name": "pracovní stůl",
+                "self_side": "vertical",
+                "that_side": "vertical"},
+            "distance_bonus": {
+                "name": "dveřní prostor"
             }
         }
     ]
