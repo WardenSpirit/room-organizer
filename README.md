@@ -67,42 +67,48 @@ Program:
 
 ## 📝 Příklad vstupu
 
-Soubor `problem.json` obsahuje jednoduchou konfiguraci místnosti a nábytku, například:
+Soubor `problem.json` obsahuje jednoduchou konfiguraci místnosti a nábytku. Zde jsou vysvětlivky atributů:
 
 ```json
 {
     "room_size": [
-        5.0,
-        4.5
+        4.5,                                    // šířka místnosti*
+        3.5                                     // výška místnosti*
     ],
-    "rectangles": [
+    "items": [
         {
-            "index": 0,
-            "name": "postel",
+            "name": "postel",                   // jméno
             "size": [
-                1.8,
-                2.1
-            ]
+                1.8,                            // šířka objektu*
+                2.05                            // výška objektu*
+            ],
+            "color": "red",                     // barva ve vizualizaci
+            "against_wall": {                   // vynutí umístění objektu ke stěně
+                "with_side": "vertical",        // strana umístěná ke stěně
+                "allowed_walls": [              // povolené stěny, k nimž je umístění vynucováno (implicitně všechny)
+                    "left",
+                    "bottom",
+                    "right"
+                ]
+            }
         },
         {
-            "index": 1,
-            "name": "skříň",
+            "name": "noční stolek",
             "size": [
-                0.8,
-                0.6
-            ]
-        },
-        {
-            "index": 1,
-            "name": "koberec",
-            "size": [
-                3.2,
-                2.4
-            ]
+                0.5,
+                0.3
+            ],
+            "color": "black",
+            "beside": {                         // vynucení umístění tohoto objektu vedle jiného
+                "name": "postel",               // odkazovaný objekt*
+                "self_side": "horizontal",      // sousedící strana tohoto objektu (stolku)*
+                "that_side": "horizontal"       // sousedící strana odkazovaného objektu (postele)*
+            }
         }
     ]
 }
 ```
+*: atribut je na této úrovni povinný
 
 ---
 
