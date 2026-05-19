@@ -6,4 +6,4 @@ __pycache__/
 
 # Virtual environments
 venv/
-scipenv/
+room_organizer_env/
