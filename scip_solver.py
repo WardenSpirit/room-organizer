@@ -155,7 +155,7 @@ def _constrain_items_neighbourliness(model, items, item_vars):
             i, j = j, i
             i_side = item["beside"]["that_side"]
             j_side = item["beside"]["self_side"]
-        
+
         relation = relations[i][j]
         left = relation["left"]
         right = relation["right"]
@@ -168,41 +168,17 @@ def _constrain_items_neighbourliness(model, items, item_vars):
             model.addCons(rotations[i] + rotations[j] == 1, name = "exactly_one_of_i_and_j_rotated")
 
         if i_side == "horizontal":
-            if j_side == "horizontal":
-                model.addCons(below + above <= 0 + M * (rotations[i]), name = "i_intersects_on_y_axis_with_j")
-                model.addCons(coords[i,0] + sizes[i,0] >= coords[j,0] - M * (rotations[i]), name = "i_not_far_on_left_from_j")
-                model.addCons(coords[i,0] <= coords[j,0] + sizes[j,0] + M * (rotations[i]), name = "i_not_far_on_right_from_j")
+            i_flipped_axis = rotations[i]
+        else:
+            i_flipped_axis = 1 - rotations[i]
 
-                model.addCons(left + right <= 0 + M * (1 - rotations[i]), name = "i_intersects_on_x_axis_with_j")
-                model.addCons(coords[i,1] + sizes[i,1] >= coords[j,1] - M * (1 - rotations[i]), name = "i_not_far_on_left_from_j")
-                model.addCons(coords[i,1] <= coords[j,1] + sizes[j,1] + M * (1 - rotations[i]), name = "i_not_far_on_right_from_j")
-            else: # j_side == "vertical"
-                model.addCons(left + right <= 0 + M * (1 - rotations[i]), name = "i_intersects_on_x_axis_with_j")
-                model.addCons(coords[i,1] + sizes[i,1] >= coords[j,1] - M * (1 - rotations[i]), name = "i_not_far_below_j")
-                model.addCons(coords[i,1] <= coords[j,1] + sizes[j,1] + M * (1 - rotations[i]), name = "i_not_far_above_j")
+        model.addCons(below + above <= 0 + M * (i_flipped_axis), name = "i_intersects_on_y_axis_with_j")
+        model.addCons(left + right <= 0 + M * (1 - i_flipped_axis), name = "i_intersects_on_x_axis_with_j")
 
-                model.addCons(below + above <= 0 + M * (rotations[i]), name = "i_intersects_on_y_axis_with_j")
-                model.addCons(coords[i,0] + sizes[i,0] >= coords[j,0] - M * (rotations[i]), name = "i_not_far_on_left_from_j")
-                model.addCons(coords[i,0] <= coords[j,0] + sizes[j,0] + M * (rotations[i]), name = "i_not_far_on_right_from_j")
-
-        else: # i_side == "vertical"
-            if j_side == "horizontal":
-                model.addCons(below + above <= 0 + M * (1 - rotations[i]), name = "i_intersects_on_y_axis_with_j")
-                model.addCons(coords[i,0] + sizes[i,0] >= coords[j,0] - M * (rotations[i]), name = "i_not_far_on_left_from_j")
-                model.addCons(coords[i,0] <= coords[j,0] + sizes[j,0] + M * (rotations[i]), name = "i_not_far_on_right_from_j")
-
-                model.addCons(left + right <= 0 + M * (rotations[i]), name = "i_intersects_on_x_axis_with_j")
-                model.addCons(coords[i,1] + sizes[i,1] >= coords[j,1] - M * (rotations[i]), name = "i_not_far_below_j")
-                model.addCons(coords[i,1] <= coords[j,1] + sizes[j,1] + M * (rotations[i]), name = "i_not_far_above_j")
-
-            else: # j_side == "vertical"
-                model.addCons(left + right <= 0 + M * (rotations[i]), name = "i_intersects_on_x_axis_with_j")
-                model.addCons(coords[i,1] + sizes[i,1] >= coords[j,1] - M * (rotations[i]), name = "i_not_far_below_j")
-                model.addCons(coords[i,1] <= coords[j,1] + sizes[j,1] + M * (rotations[i]), name = "i_not_far_above_j")
-
-                model.addCons(below + above <= 0 + M * (1 - rotations[i]), name = "i_intersects_on_y_axis_with_j")
-                model.addCons(coords[i,0] + sizes[i,0] >= coords[j,0] - M * (1 - rotations[i]), name = "i_not_far_below_j")
-                model.addCons(coords[i,0] <= coords[j,0] + sizes[j,0] + M * (1 - rotations[i]), name = "i_not_far_above_j")
+        model.addCons(coords[i,0] + sizes[i,0] >= coords[j,0] - M * (i_flipped_axis), name = "i_not_far_on_left_from_j")
+        model.addCons(coords[i,0] <= coords[j,0] + sizes[j,0] + M * (i_flipped_axis), name = "i_not_far_on_right_from_j")
+        model.addCons(coords[i,1] + sizes[i,1] >= coords[j,1] - M * (1 - i_flipped_axis), name = "i_not_far_below_j")
+        model.addCons(coords[i,1] <= coords[j,1] + sizes[j,1] + M * (1 - i_flipped_axis), name = "i_not_far_above_j")
 
 def _get_result(model: Model, item_vars):
 
@@ -221,7 +197,7 @@ def _get_result(model: Model, item_vars):
     return result
 
 def solve(problem):
-    
+
     room_size = problem["room_size"]
     items = problem["items"]
 
